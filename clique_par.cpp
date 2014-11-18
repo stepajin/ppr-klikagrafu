@@ -384,7 +384,7 @@ void receiveWork(Stack * stack, int graphSize) {
 *
 *****************/
 
-void broadcastTermation() {
+void broadcastTermination() {
 	int something = 0;
 	for (int dest = 1; dest < P; dest++) {
 		MPI_Send(&something, 1, MPI_INT, dest, MSG_TAG_TERMINATION, MPI_COMM_WORLD);
@@ -507,7 +507,8 @@ int main(int argc, char *argv[]) {
 
 	while (!termination) {
 
-		if (counter % QUANTUM == 0) {
+		if (counter++ == QUANTUM) {
+			counter = 0;
 
 			/*********************
 			*
@@ -553,7 +554,7 @@ int main(int argc, char *argv[]) {
 		    			}
 
 		    			if (PID == MASTER_PROCESS && token == WHITE) {
-		    				broadcastTermation();
+		    				broadcastTermination();
 				    		termination = true;
 				    	}
 		    			break;
@@ -617,8 +618,6 @@ int main(int argc, char *argv[]) {
 			if (state != maxClique)
 				delete state;
 		}
-
-		counter = (counter + 1) % QUANTUM;
 	}
 
 	/***************************
