@@ -669,7 +669,7 @@ int main(int argc, char *argv[]) {
 	/* Shut down MPI */
 	MPI_Barrier(MPI_COMM_WORLD);
 	time2 = MPI_Wtime();
-	if (PID == MASTER_PROCESS)
+	if (PID == MASTER_PROCESS && argc < 3)
 	  	cout << "Time of computation: " << time2 - time1 << "s" << endl; 
   	MPI_Finalize();
 
