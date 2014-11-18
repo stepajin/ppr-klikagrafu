@@ -1,0 +1,6 @@
+GRAPHVIZ:
+./generator -t AD -n 8 -k 5 -o graph.out; mpirun -n 4 ./a.out graph.out 1 > graph.gv;  dot -Tpng graph.gv -o graph.png
+
+NORMAL VYPIS
+./generator -t AD -n 8 -k 5 -o graph.out; mpirun -n 4 ./a.out graph.out
+
