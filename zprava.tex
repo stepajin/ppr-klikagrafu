@@ -1,0 +1,199 @@
+\documentclass[12pt]{article}
+\usepackage{epsf,epic,eepic,eepicemu}
+\usepackage[utf8]{inputenc}
+
+\usepackage[czech]{babel}
+\usepackage{wrapfig}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+
+\begin{document}
+
+\begin{center}
+  \bf Semestralní projekt MI-PAR 2014/2015:\\[5mm]
+      Paralelní algoritmus pro řešení problému\\[5mm]
+         Jindřich Štěpánek\\
+         Václav Mach\\[2mm]
+  magisterské studijum, FIT ČVUT, Kolejní 550/2, 160 00 Praha 6\\[2mm]
+  \today
+\end{center}
+
+\section{Definice problému a popis sekvenčního algoritmu}
+
+Zadaným problémem bylo nalezení maximální kliky na zadaném grafu.
+Pojmem klika grafu je v teorii grafů označen takový maximální podgraf nějakého grafu, 
+který je úplným grafem, tzn. jehož všechny vrcholy jsou spojeny hranou se všemi zbylými.
+Velikost kliky je dána počtem vrcholů.
+
+\begin{figure}[ht]
+  \begin{center}
+    \includegraphics[scale=0.5]{clique.pdf}
+  \end{center}
+  \caption{Největší klika (1,2,5) tohoto grafu je označena červeně.}
+\end{figure}
+
+Nalezení maximální kliky grafu tedy znamená, že je nutné postupně procházet celý stavový prostor uzlů grafu
+a zkoumat, zda konkrétní množina uzlů tvoří úplný graf. Problém je možné řešit dvěma způsoby, 
+buď postupným přidáváním nebo odebíráním uzlů. Rozhodli jsme se pro řešení pomocí přidávání.
+
+Vstupem programu je jednoduchý souvislý neorientovaný neohodnocený graf $G(V, E)$ o n uzlech a m hranách. 
+Dále $n$ je přirozené číslo představující počet uzlů grafu $G$, $n >= 5$,
+k je přirozené číslo řádu jednotek představující průměrný stupeň uzlu grafu $G$, $n >= k >= 3$ a $r$ kladné reálné číslo takové, že $0 < r < 1$.
+Úkolem programu mělo být zjištění, zda graf $G$ obsahuje kliku o velikosti alespoň (rovnou nebo větší) $r * n$ a nalézt největší takovou kliku. 
+Výstupem programu měl být seznam uzlů tvořící kliku, popřípadě konstatování, že klika neexistuje. 
+
+Sekvenční algoritmus pro řešení tohoto problému je typu BB-DFS (branch-and-bound Depth-first search) 
+s hloubkou stavového stromu omezenou na n. 
+Cena řešení, která se maximalizuje, je velikost kliky vzhledem k zadané podmínce. 
+Horní mez ceny řešení není známa. Algoritmus skončí, až prohledá celý stavový prostor.
+Dolní mez je 2, pokud graf obsahuje aspoň 1 hranu.
+Horní mez není známá, ale dá se odhadnout takto: Pokud $G$ obsahuje kliku o velikosti $x$, pak musí obsahovat $x$ vrcholů se stupněm větším nebo rovným $x-1$.
+
+Pro naši implementaci sekvenčního algoritmu jsme zvolili jazyk C++.
+Program nejprve přečtě vstupní data, následně inicializuje zásobník realizovaný pomocí třídy vector s datovým typem int.
+Dále program už pouze prohledává stavový prostor, dokud má na zásobníku data ke zpracování
+a testuje zda konkrétní daná množina tvoří úplný graf. 
+Nejvetší nalezenou kliku si uložíme a po skončení prohledávání stavového prostoru ji porovnáme se zadanou podmínkou.
+
+
+
+\begin{table}[ht]
+  \begin{center}
+    \begin{tabular}{| c | c | c |}
+      \hline
+      $n$ & $k$ & doba běhu úlohy \\ \hline
+      350 & 168 & 11 minut, 41 sekund \\ \hline
+      320 & 160 & 12 minut, 23 sekund \\ \hline
+      155 & 101 & 10 minut, 26 sekund \\
+      \hline
+    \end{tabular}
+    \caption{Tabulka naměřených hodnot pro sekvenční řešení.}
+  \end{center}
+\end{table}
+
+
+
+
+%Popište problém, který váš program řeší. Jako výchozí použijte text
+%zadání, který rozšiřte o přesné vymezení všech odchylek, které jste
+%vůči zadání během implementace provedli (např.  úpravy heuristické
+%funkce, organizace zásobníku, apod.). Zmiňte i případně i takové
+%prvky algoritmu, které v zadání nebyly specifikovány, ale které se
+%ukázaly jako důležité.  Dále popište vstupy a výstupy algoritmu
+%(formát vstupních a výstupních dat). Uveďte tabulku nameřených časů
+%sekvenčního algoritmu pro různě velká data.
+
+\section{Popis paralelního algoritmu a jeho implementace v MPI}
+
+Paralelní algoritmus pro řešení tohoto problému je typu PBB-DFS-V. 
+Algoritmus PBB-DFS-V lze popsat následovně: 
+Všechny procesory vědí nebo se dozvědí hodnotu horní meze ceny řešení a hodnota dolní meze není známa. 
+Pak stačí, aby si každý procesor lokálně udržoval informaci o svém dosud nejlepším řešení. 
+Po vyprázdnění všech zásobníků se provede distribuované ukončení výpočtu pomocí algoritmu ADUV a 
+pak pomocí paralelní redukce se ze všech nejlepších lokálních řešení vybere globálně nejlepší. 
+
+TODO
+
+
+
+\begin{table}[ht]
+  \begin{center}
+    \begin{tabular}{| c | c | c |}
+      \hline
+      $n$ & $k$ & doba běhu úlohy \\ \hline
+      & & \\ \hline
+      & & \\ \hline
+      & & \\
+      \hline
+    \end{tabular}
+    \caption{Tabulka naměřených hodnot pro paralelní řešení.}
+  \end{center}
+\end{table}
+
+%Popište paralelní algoritmus, opět vyjděte ze zadání a přesně
+%vymezte odchylky, zvláště u algoritmu pro vyvažování zátěže, hledání
+%dárce, ci ukončení výpočtu.  Popište a vysvětlete strukturu
+%celkového paralelního algoritmu na úrovni procesů v MPI a strukturu
+%kódu jednotlivých procesů. Např. jak je naimplementována smyčka pro
+%činnost procesů v aktivním stavu i v stavu nečinnosti. Jaké jste
+%zvolili konstanty a parametry pro škálování algoritmu. Struktura a
+%sémantika příkazové řádky pro spouštění programu.
+
+\section{Naměřené výsledky a vyhodnocení}
+
+%\subsection{Sekvenční řešení}
+
+Pro sekvenční řešení jsme nalezli tři instance problému v zadaném časovém intervalu a 
+následně jsme tyto instance zpracovali pomocí paralelního řešení.
+
+\begin{table}[ht]
+  \begin{center}
+    \begin{tabular}{| c | c | c |}
+      \hline
+      $n$ & $k$ & doba běhu úlohy \\ \hline
+      350 & 168 & 11 minut, 41 sekund \\ \hline
+      320 & 160 & 12 minut, 23 sekund \\ \hline
+      155 & 101 & 10 minut, 26 sekund \\ \hline
+      & & \\ \hline
+      & & \\ \hline
+      & & \\
+      \hline
+    \end{tabular}
+    \caption{Tabulka naměřených hodnot pro sekvenční i paralelní řešení.}
+  \end{center}
+\end{table}
+
+%\begin{enumerate}
+%  \item n = 350, k = 168, trvání 11 minut, 41 sekund
+%  \item n = 320, k = 160, trvání 12 minut, 23 sekund
+%  \item n = 155, k = 101, trvání 10 minut, 26 sekund
+%\end{enumerate}
+
+Tyto instance problému byly dále využity pro paralelní řešení a zkoumání zrychlení při paralelním řešení problému.
+Z naměřených hodnot je zřejmé, že mezi proměnnýmí $n$ a $k$ existuje určitá závíslost. 
+Tato závislost se projevila zejména při hledání vhodných instancí problému v daném časovém intervalu, 
+přicemž pozměnění jedenoho ze dvou parametrů o několik jednotek při zachování druhého, mělo za následek
+několikanásobné prodloužení či zkrácení doby běhu úlohy.
+
+%Protože hledání vhodných instancí problému bylo časové náročné,a 
+
+%\subsection{Paralelní řešení}
+TODO
+
+%\begin{enumerate}
+%\item Zvolte tři instance problému s takovou velikostí vstupních dat, pro které má
+%sekvenční algoritmus časovou složitost kolem 5, 10 a 15 minut. Pro
+%meření čas potřebný na čtení dat z disku a uložení na disk
+%neuvažujte a zakomentujte ladící tisky, logy, zprávy a výstupy.
+%\item Měřte paralelní čas při použití $i=2,\cdot,32$ procesorů na sítích Ethernet a InfiniBand.
+%%\item Pri mereni kazde instance problemu na dany pocet procesoru spoctete pro vas algoritmus dynamicke delby prace celkovy pocet odeslanych zadosti o praci, prumer na 1 procesor a jejich uspesnost.
+%%\item Mereni pro dany pocet procesoru a instanci problemu provedte 3x a pouzijte prumerne hodnoty.
+%\item Z naměřených dat sestavte grafy zrychlení $S(n,p)$. Zjistěte, zda a za jakych podmínek
+%došlo k superlineárnímu zrychlení a pokuste se je zdůvodnit.
+%\item Vyhodnoďte komunikační složitost dynamického vyvažování zátěže a posuďte
+%vhodnost vámi implementovaného algoritmu pro hledání dárce a dělení
+%zásobníku pri řešení vašeho problému. Posuďte efektivnost a
+%škálovatelnost algoritmu. Popište nedostatky vaší implementace a
+%navrhněte zlepšení.
+%\item Empiricky stanovte
+%granularitu vaší implementace, tj., stupeň paralelismu pro danou
+%velikost řešeného problému. Stanovte kritéria pro stanovení mezí, za
+%kterými již není učinné rozkládat výpočet na menší procesy, protože
+%by komunikační náklady prevážily urychlení paralelním výpočtem.
+%
+%\end{enumerate}
+
+\section{Závěr}
+
+%Během semestru jsme m
+%
+%Celkové zhodnocení semestrální práce a zkušenosti získaných během
+%semestru.
+
+TODO
+
+\section{Literatura}
+
+\appendix
+
+\end{document}
