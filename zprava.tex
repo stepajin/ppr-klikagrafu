@@ -6,6 +6,16 @@
 \usepackage{wrapfig}
 \usepackage{graphicx}
 \usepackage{epstopdf}
+\usepackage{multirow}
+\usepackage{listings}
+
+
+% hack to fix cline
+\usepackage{booktabs}
+
+\usepackage{etoolbox}
+\preto\tabular{\shorthandoff{-}}
+% end of hack
 
 \begin{document}
 
@@ -19,6 +29,8 @@
 \end{center}
 
 \section{Definice problému a popis sekvenčního algoritmu}
+
+\subsection{Definice problému}
 
 Zadaným problémem bylo nalezení maximální kliky na zadaném grafu.
 Pojmem klika grafu je v teorii grafů označen takový maximální podgraf nějakého grafu, 
@@ -36,11 +48,40 @@ Nalezení maximální kliky grafu tedy znamená, že je nutné postupně prochá
 a zkoumat, zda konkrétní množina uzlů tvoří úplný graf. Problém je možné řešit dvěma způsoby, 
 buď postupným přidáváním nebo odebíráním uzlů. Rozhodli jsme se pro řešení pomocí přidávání.
 
-Vstupem programu je jednoduchý souvislý neorientovaný neohodnocený graf $G(V, E)$ o n uzlech a m hranách. 
-Dále $n$ je přirozené číslo představující počet uzlů grafu $G$, $n >= 5$,
-k je přirozené číslo řádu jednotek představující průměrný stupeň uzlu grafu $G$, $n >= k >= 3$ a $r$ kladné reálné číslo takové, že $0 < r < 1$.
-Úkolem programu mělo být zjištění, zda graf $G$ obsahuje kliku o velikosti alespoň (rovnou nebo větší) $r * n$ a nalézt největší takovou kliku. 
+\subsection{Vstup a výstup programu}
+
+Vstup programu:
+\begin{itemize}
+  \item{$G(V,E)$ -- jednoduchý souvislý neorientovaný neohodnocený graf o $n$ uzlech a $m$ hranách}
+  \item{$n$ -- přirozené číslo představující počet uzlů grafu $G$, $n >= 5$}
+  \item{$k$ -- přirozené číslo řádu jednotek představující průměrný stupeň uzlu grafu $G$, $n >= k >= 3$}
+  \item{$r$ -- kladné reálné číslo, $0 < r < 1$}
+\end{itemize}
+
+Pro generování grafů jsme použili generátor s volbou typu grafu ''-t AD'', 
+který vygeneruje souvislý neorientovaný neohodnocený graf. příklad vstupu pro parametry $n = 10, k = 4$: 
+
+\begin{lstlisting}
+10
+0010010000
+0000001010
+1000111111
+0000000110
+0010011111
+1010100100
+0110100010
+0011110010
+0111101100
+0010100000
+\end{lstlisting}
+
+na prvním řádku vstupního souboru je uveden počet vrcholů, na dalších řádcích následuje samotný popis grafu v binární podobě.
+
+Úkolem programu mělo být zjištění, zda graf $G$ obsahuje kliku o velikosti alespoň (rovné nebo větší) $r * n$ a nalézt největší takovou kliku. 
 Výstupem programu měl být seznam uzlů tvořící kliku, popřípadě konstatování, že klika neexistuje. 
+
+
+\subsection{Popis sekvenčího algoritmu}
 
 Sekvenční algoritmus pro řešení tohoto problému je typu BB-DFS (branch-and-bound Depth-first search) 
 s hloubkou stavového stromu omezenou na n. 
@@ -49,13 +90,15 @@ Horní mez ceny řešení není známa. Algoritmus skončí, až prohledá celý
 Dolní mez je 2, pokud graf obsahuje aspoň 1 hranu.
 Horní mez není známá, ale dá se odhadnout takto: Pokud $G$ obsahuje kliku o velikosti $x$, pak musí obsahovat $x$ vrcholů se stupněm větším nebo rovným $x-1$.
 
+\subsection{Implementace}
+
 Pro naši implementaci sekvenčního algoritmu jsme zvolili jazyk C++.
-Program nejprve přečtě vstupní data, následně inicializuje zásobník realizovaný pomocí třídy vector s datovým typem int.
+Program nejprve přečtě vstupní data ze souboru, který je prvním argumentem programu, a následně inicializuje zásobník 
+realizovaný pomocí třídy vector s datovým typem int.
 Dále program už pouze prohledává stavový prostor, dokud má na zásobníku data ke zpracování
 a testuje zda konkrétní daná množina tvoří úplný graf. 
-Nejvetší nalezenou kliku si uložíme a po skončení prohledávání stavového prostoru ji porovnáme se zadanou podmínkou.
-
-
+Pokud algoritmus najde množinu uzlů, která tvoří kliku grafu a následně přidá uzel, se kterým již množina kliku netvoří, dále již v prohledávání této větvě nepokračuje.
+Nejvetší nalezená kliku je v průběhu výpočtu uložena a po skončení prohledávání stavového prostoru je porovnána se zadanou podmínkou.
 
 \begin{table}[ht]
   \begin{center}
@@ -71,7 +114,10 @@ Nejvetší nalezenou kliku si uložíme a po skončení prohledávání stavové
   \end{center}
 \end{table}
 
-
+Z tabulky je zřejmé, že jsme se odchýlili od zadání ve vstupních datech parametrem $k$, který měl být podle zadání v řádu jednotek.
+Tato odchylka byla z našeho pohledu nutná, pokud bychom měli dodržet zadání přesně, bylo by nutné hledat instance problému
+v daném časovém intervalu témeř výhradně na základě parametru $n$. Protože toto se ukázalo jako velmi problematické při zachovaní 
+parametru $k$ v řádu jednotek, rozhodli jsme se použít vzájemně ''vyvážené'' hodnoty obou parametrů.
 
 
 %Popište problém, který váš program řeší. Jako výchozí použijte text
@@ -85,22 +131,45 @@ Nejvetší nalezenou kliku si uložíme a po skončení prohledávání stavové
 
 \section{Popis paralelního algoritmu a jeho implementace v MPI}
 
+\subsection{Popis paralelního algoritmu}
+
 Paralelní algoritmus pro řešení tohoto problému je typu PBB-DFS-V. 
 Algoritmus PBB-DFS-V lze popsat následovně: 
 Všechny procesory vědí nebo se dozvědí hodnotu horní meze ceny řešení a hodnota dolní meze není známa. 
 Pak stačí, aby si každý procesor lokálně udržoval informaci o svém dosud nejlepším řešení. 
-Po vyprázdnění všech zásobníků se provede distribuované ukončení výpočtu pomocí algoritmu ADUV a 
+Po vyprázdnění všech zásobníků se provede distribuované ukončení výpočtu pomocí modifikovaného ADUV algoritmu a 
 pak pomocí paralelní redukce se ze všech nejlepších lokálních řešení vybere globálně nejlepší. 
 
-TODO
+\subsection{Implementace}
 
+Pro dělení zásobníku jsme zvolili algoritmus D-ADZ, který je podle nás vhodný z důvodu
+rozložení stavového prostoru. Stavy na dně zásobníku obsahují mnohem vetší podprostory, než stavy
+na vrcholu zásobníku, proto tímto dělením dosáhneme efektivního rozložení práce mezi procesory.
+
+V naší implementaci jsme se od výše popsaného algoritmu odchýlili v části dokončení výpočtu,
+kdy by měly výpočetní uzly provést paralelní redukci pro získání globálního výsledku.
+My jsme provedli úpravu, kdy procesory pošlou své nalezené výsledky mateřskému procesoru, který výsledky
+následně zpracuje.
+
+Jako algoritmus dárce jsme zvolili ACŽ-AHD (asynchronní cyklické žádosti). Algoritmus je popsán následovně:
+\begin{itemize}
+  \item{Každý procesor si udržuje lokální čítač $D$, 
+  $0 <= D <= p - 1$, což je index potenciálního dárce.\\
+    Počáteční hodnota může být $D = (mytid() + 1) mod p$.}
+  \item{Jestliže se procesor stane nečinný, požádá procesor $\#<D>$ a inkrementuje cítač $D$.}
+  \item{Může se stát, že jeden procesor je žádán více procesory současně, ale pravděpodobně ne mnoha, protože
+  požadavky na práci generuje každý procesor nezávisle na ostatních.}
+  \item{Z počátku může být komunikace lokální, ale postupně se může stát globální.}
+\end{itemize}
+
+implementace zasobniku - dopsat
 
 
 \begin{table}[ht]
   \begin{center}
-    \begin{tabular}{| c | c | c |}
+    \begin{tabular}{| c | c | c | c | c |}
       \hline
-      $n$ & $k$ & doba běhu úlohy \\ \hline
+      $n$ & $k$ & doba běhu úlohy & počet procesorů & použitá komunikační síť\\ \hline
       & & \\ \hline
       & & \\ \hline
       & & \\
@@ -126,38 +195,54 @@ TODO
 Pro sekvenční řešení jsme nalezli tři instance problému v zadaném časovém intervalu a 
 následně jsme tyto instance zpracovali pomocí paralelního řešení.
 
+sance na superlinearni zrychleni?
+grafy nemusi byt, staci tabulka
+
+
+posilani prace - pomaha, poznamky z testovani
+
+redukci lze pouzit pro ciselne vysledky
+
+stack odebiratelny i ze spoda - odebirani po jednom? zalezi jak je plny .. 
+
+
+zjistit, kdy se lame skalovatelnost - vetsi a mensi instance
+
+
 \begin{table}[ht]
   \begin{center}
-    \begin{tabular}{| c | c | c |}
-      \hline
-      $n$ & $k$ & doba běhu úlohy \\ \hline
-      350 & 168 & 11 minut, 41 sekund \\ \hline
-      320 & 160 & 12 minut, 23 sekund \\ \hline
-      155 & 101 & 10 minut, 26 sekund \\ \hline
-      & & \\ \hline
-      & & \\ \hline
-      & & \\
+    \begin{tabular}{| c | c | c | c |}
+      \cline{2-4}
+                 \multicolumn{1}{c|}{} & $n$ & $k$ & doba běhu úlohy \\ \hline
+     \multirow{3}{*}{sekvenční řešení} & 350 & 168 & 11 minut, 41 sekund \\ 
+                                       & 320 & 160 & 12 minut, 23 sekund \\ 
+                                       & 155 & 101 & 10 minut, 26 sekund \\ \hline
+     \multirow{3}{*}{paralelní řešení} & 350 & 168 & 46.7416 sekund pro 12 cpu - jeste upravit\\
+                                       & 320 & 160 & \\
+                                       & 155 & 101 & \\
       \hline
     \end{tabular}
     \caption{Tabulka naměřených hodnot pro sekvenční i paralelní řešení.}
   \end{center}
 \end{table}
 
-%\begin{enumerate}
-%  \item n = 350, k = 168, trvání 11 minut, 41 sekund
-%  \item n = 320, k = 160, trvání 12 minut, 23 sekund
-%  \item n = 155, k = 101, trvání 10 minut, 26 sekund
-%\end{enumerate}
-
 Tyto instance problému byly dále využity pro paralelní řešení a zkoumání zrychlení při paralelním řešení problému.
-Z naměřených hodnot je zřejmé, že mezi proměnnýmí $n$ a $k$ existuje určitá závíslost. 
+Z naměřených hodnot je zřejmé, že mezi proměnnýmí $n$ a $k$ existuje určitá závislost. 
 Tato závislost se projevila zejména při hledání vhodných instancí problému v daném časovém intervalu, 
 přicemž pozměnění jedenoho ze dvou parametrů o několik jednotek při zachování druhého, mělo za následek
 několikanásobné prodloužení či zkrácení doby běhu úlohy.
 
-%Protože hledání vhodných instancí problému bylo časové náročné,a 
+Při hledání vhodných instancí problému jsme často testovali úlohu pro obdobné nebo stejné parametry vstupního grafu,
+díky tomu jsme přišli na to, že doba běhu úlohy je závislá na konkrétní podobě grafu.
+Tento faktor může hrát taktéž určitou roli v porovnání zrychlení paralelního řešení oproti sekvenčnímu, 
+protože v daném časovém intervalu hrála významnou roli -- při časech přes 10 minut byl rozptyl až zhruba 2 minuty.
 
-%\subsection{Paralelní řešení}
+Většina zrychlení paralelního řešení je způsobena výhodnoným inicialním rozložením práce mezi procesory.
+Při implementaci jsme se snažili o celkové rozdělení stavového prostoru mezi všechny procesory, to je pravpodědobně důvodem ideálních výsledků, které přibližně odpovídají lineárnímu zrychlení.
+Další možný zdroj zrychlení je přerozdělování práce v průběhu hlavního výpočtu, jelikož některé procesory můžou i přes 
+úvodní rovnoměrné rozdělení končit rychleji než ostatní, protože není třeba procházet všechny možné kombinace uzlů,
+ale jen ty, které stále splňují podmínku, že jejich uzly tvoří kliku grafu.
+
 TODO
 
 %\begin{enumerate}
