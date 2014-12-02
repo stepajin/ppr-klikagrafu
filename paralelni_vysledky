@@ -1,0 +1,132 @@
+n: 350, k: 168, 2 vypocetni jadra ============ 
+Size: 12
+Nodes: 44 61 111 159 168 180 235 246 251 275 322 327 
+Time of computation: 343.442s
+
+n: 350, k: 168, 4 vypocetni jadra ============ 
+Size: 12
+Nodes: 44 61 111 159 168 180 235 246 251 275 322 327 
+Time of computation: 172.294s
+
+n: 350, k: 168, 8 vypocetnich jader ============ 
+Size: 12
+Nodes: 8 41 88 89 101 180 219 235 247 279 289 322 
+Time of computation: 69.5052s
+
+n: 350, k: 168, 16 vypocetnich jader ============ 
+Size: 12
+Nodes: 2 42 86 101 222 232 235 278 279 306 326 327 
+Time of computation: 34.6873s
+
+n: 350, k: 168, 24 vypocetnich jader ============ 
+n: 350, k: 168, 2 vypocetni jadra ============ 
+n: 350, k: 168, 2 vypocetni jadra ============ 
+Size: 12
+Nodes: 26 105 124 145 167 212 214 258 276 322 326 337 
+Time of computation: 338.751s
+
+n: 350, k: 168, 4 vypocetni jadra ============ 
+
+n: 350, k: 168, 32 vypocetnich jader ============ 
+Size: 12
+Nodes: 5 31 52 61 66 70 71 143 148 239 246 306 
+Time of computation: 175.867s
+Size: 12
+Nodes: 18 73 100 110 114 119 120 126 160 191 231 246 
+Time of computation: 20.8837s
+
+n: 350, k: 168, 8 vypocetnich jader ============ 
+Size: 12
+Nodes: 26 105 124 145 167 212 214 258 276 322 326 337 
+Time of computation: 69.4272s
+
+n: 350, k: 168, 16 vypocetnich jader ============ 
+Size: 12
+Nodes: 18 73 100 110 114 119 120 126 160 191 231 246 
+Time of computation: 34.6963s
+
+n: 350, k: 168, 24 vypocetnich jader ============ 
+Size: 12
+Nodes: 26 105 124 145 167 212 214 258 276 322 326 337 
+Time of computation: 23.9883s
+
+n: 350, k: 168, 32 vypocetnich jader ============ 
+Size: 12
+Nodes: 18 73 100 110 114 119 120 126 160 191 231 246 
+Time of computation: 20.2727s
+
+n: 320, k: 160, 2 vypocetni jadra ============ 
+Size: 12
+Nodes: 32 79 101 126 160 180 217 234 246 248 303 313 
+Time of computation: 332.483s
+
+n: 320, k: 160, 4 vypocetni jadra ============ 
+Size: 12
+Nodes: 32 79 101 126 160 180 217 234 246 248 303 313 
+Time of computation: 167.251s
+
+n: 320, k: 160, 8 vypocetnich jader ============ 
+Size: 12
+Nodes: 32 79 101 126 160 180 217 234 246 248 303 313 
+Time of computation: 68.3213s
+
+n: 320, k: 160, 2 vypocetni jadra ============ 
+Size: 13
+Nodes: 46 50 60 92 106 117 140 153 252 265 286 306 312 
+Time of computation: 380.293s
+
+n: 320, k: 160, 4 vypocetni jadra ============ 
+Size: 13
+Nodes: 0 13 40 46 56 72 80 81 88 173 232 274 297 
+Time of computation: 411.524s
+
+n: 320, k: 160, 8 vypocetnich jader ============ 
+Size: 13
+Nodes: 0 13 40 46 56 72 80 81 88 173 232 274 297 
+Time of computation: 77.3955s
+
+n: 320, k: 160, 16 vypocetnich jader ============ 
+Size: 13
+Nodes: 0 13 40 46 56 72 80 81 88 173 232 274 297 
+Time of computation: 39.0874s
+
+n: 320, k: 160, 24 vypocetnich jader ============ 
+Size: 13
+Nodes: 0 13 40 46 56 72 80 81 88 173 232 274 297 
+Time of computation: 34.0124s
+
+n: 320, k: 160, 32 vypocetnich jader ============ 
+Size: 13
+Nodes: 46 50 60 92 106 117 140 153 252 265 286 306 312 
+Time of computation: 22.4312s
+
+n: 155, k: 101, 2 vypocetni jadra ============ 
+Size: 15
+Nodes: 28 36 45 46 68 83 85 98 107 119 130 131 133 141 148 
+Time of computation: 459.888s
+
+n: 155, k: 101, 4 vypocetni jadra ============ 
+Size: 15
+Nodes: 28 36 45 46 68 83 85 98 107 119 130 131 133 141 148 
+Time of computation: 235.884s
+
+n: 155, k: 101, 8 vypocetnich jader ============ 
+Size: 15
+Nodes: 0 10 13 22 29 30 54 56 65 67 87 101 107 109 146 
+Time of computation: 93.5289s
+
+n: 155, k: 101, 16 vypocetnich jader ============ 
+Size: 15
+Nodes: 4 41 42 44 50 52 64 88 90 101 110 111 129 131 143 
+Time of computation: 46.441s
+
+n: 155, k: 101, 24 vypocetnich jader ============ 
+Size: 15
+Nodes: 4 23 27 28 29 44 53 64 65 83 96 101 112 119 143 
+Time of computation: 38.7785s
+
+n: 155, k: 101, 32 vypocetnich jader ============ 
+Size: 15
+Nodes: 5 7 27 28 29 44 53 64 65 83 96 101 112 119 143 
+Time of computation: 26.3381s
+
