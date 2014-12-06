@@ -55,13 +55,14 @@ Vstup programu:
   \item{$G(V,E)$ -- jednoduchý souvislý neorientovaný neohodnocený graf o $n$ uzlech a $m$ hranách}
   \item{$n$ -- přirozené číslo představující počet uzlů grafu $G$, $n >= 5$}
   \item{$k$ -- přirozené číslo řádu jednotek představující průměrný stupeň uzlu grafu $G$, $n >= k >= 3$}
-  \item{$r$ -- kladné reálné číslo, $0 < r < 1$}
+  \item{$r$ -- kladné reálné číslo, $0 < r < 1$}    % TODO
 \end{itemize}
 
 Pro generování grafů jsme použili generátor s volbou typu grafu ''-t AD'', 
 který vygeneruje souvislý neorientovaný neohodnocený graf. příklad vstupu pro parametry $n = 10, k = 4$: 
 
-\begin{lstlisting}
+%\begin{lstlisting}
+\begin{verbatim}
 10
 0010010000
 0000001010
@@ -73,7 +74,8 @@ který vygeneruje souvislý neorientovaný neohodnocený graf. příklad vstupu 
 0011110010
 0111101100
 0010100000
-\end{lstlisting}
+\end{verbatim}
+%\end{lstlisting}
 
 na prvním řádku vstupního souboru je uveden počet vrcholů, na dalších řádcích následuje samotný popis grafu v binární podobě.
 
@@ -93,26 +95,12 @@ Horní mez není známá, ale dá se odhadnout takto: Pokud $G$ obsahuje kliku o
 \subsection{Implementace}
 
 Pro naši implementaci sekvenčního algoritmu jsme zvolili jazyk C++.
-Program nejprve přečtě vstupní data ze souboru, který je prvním argumentem programu, a následně inicializuje zásobník 
+Program nejprve přečtě vstupní data ze souboru, který je prvním argumentem programu a následně inicializuje zásobník 
 realizovaný pomocí třídy vector s datovým typem int.
 Dále program už pouze prohledává stavový prostor, dokud má na zásobníku data ke zpracování
 a testuje zda konkrétní daná množina tvoří úplný graf. 
 Pokud algoritmus najde množinu uzlů, která tvoří kliku grafu a následně přidá uzel, se kterým již množina kliku netvoří, dále již v prohledávání této větvě nepokračuje.
 Nejvetší nalezená kliku je v průběhu výpočtu uložena a po skončení prohledávání stavového prostoru je porovnána se zadanou podmínkou.
-
-\begin{table}[ht]
-  \begin{center}
-    \begin{tabular}{| c | c | c |}
-      \hline
-      $n$ & $k$ & doba běhu úlohy \\ \hline
-      350 & 168 & 11 minut, 41 sekund \\ \hline
-      320 & 160 & 12 minut, 23 sekund \\ \hline
-      155 & 101 & 10 minut, 26 sekund \\
-      \hline
-    \end{tabular}
-    \caption{Tabulka naměřených hodnot pro sekvenční řešení.}
-  \end{center}
-\end{table}
 
 Z tabulky je zřejmé, že jsme se odchýlili od zadání ve vstupních datech parametrem $k$, který měl být podle zadání v řádu jednotek.
 Tato odchylka byla z našeho pohledu nutná, pokud bychom měli dodržet zadání přesně, bylo by nutné hledat instance problému
@@ -149,35 +137,36 @@ na vrcholu zásobníku, proto tímto dělením dosáhneme efektivního rozložen
 V naší implementaci jsme se od výše popsaného algoritmu odchýlili v části dokončení výpočtu,
 kdy by měly výpočetní uzly provést paralelní redukci pro získání globálního výsledku.
 My jsme provedli úpravu, kdy procesory pošlou své nalezené výsledky mateřskému procesoru, který výsledky
-následně zpracuje.
+následně zpracuje. Tato odchylka byla nutná, protože paralelní redukci lze použít pouze pro číselné výsledky 
+a ne strukturovaná data jako v našem případě.
 
-Jako algoritmus dárce jsme zvolili ACŽ-AHD (asynchronní cyklické žádosti). Algoritmus je popsán následovně:
+Jako algoritmus dárce jsme zvolili ACŽ-AHD (asynchronní cyklické žádosti). 
+Tento algoritmus jsme zvolili z důvodu dobré efektivity a jednoduché implementace.
+Algoritmus je popsán následovně:
+
 \begin{itemize}
-  \item{Každý procesor si udržuje lokální čítač $D$, 
+  \item{Každý procesor si udržuje \textbf{lokální čítač} $D$, 
   $0 <= D <= p - 1$, což je index potenciálního dárce.\\
-    Počáteční hodnota může být $D = (mytid() + 1) mod p$.}
-  \item{Jestliže se procesor stane nečinný, požádá procesor $\#<D>$ a inkrementuje cítač $D$.}
+    Počáteční hodnota může být $D = (mytid() + 1)$ mod $p$.}
+  \item{Jestliže se procesor stane nečinný, požádá procesor $\#\langle D \rangle$ a inkrementuje cítač $D$.}
   \item{Může se stát, že jeden procesor je žádán více procesory současně, ale pravděpodobně ne mnoha, protože
   požadavky na práci generuje každý procesor nezávisle na ostatních.}
   \item{Z počátku může být komunikace lokální, ale postupně se může stát globální.}
 \end{itemize}
 
-implementace zasobniku - dopsat
+Pro implementaci zásobníku jsme oproti sekvenčnímu řešení zvolili spojový seznam, 
+protože tato varianta umožňuje odebírání stavů jak ze začátku, tak z konce zásobníku.
+Jádro zásobníku tvořené třídou vector jsme zachovali.
 
+Struktura spuštění programu zůstala stejná jako pro sekvenční řešení -- 
+jediným povinným argumentem je soubor obsahující vstupní data.
+Zbylou část algoritmu jsme založili na sekvenčním řešení, které jsme
+pouze rozšířili o meziprocesorovou komunikaci, kterou zajišťuje knihovna MPI.
 
-\begin{table}[ht]
-  \begin{center}
-    \begin{tabular}{| c | c | c | c | c |}
-      \hline
-      $n$ & $k$ & doba běhu úlohy & počet procesorů & použitá komunikační síť\\ \hline
-      & & \\ \hline
-      & & \\ \hline
-      & & \\
-      \hline
-    \end{tabular}
-    \caption{Tabulka naměřených hodnot pro paralelní řešení.}
-  \end{center}
-\end{table}
+Knihovna MPI umožnuje přímou komunikaci mezi procesory nezávisle na komunikačních protokolech nižších vrstev.
+Taktéž je možné řídit tok programu na základě toho, zda je program spuštěn na 
+procesoru mateřském nebo na jiném.
+Naše implementace používá formy blokujících funkcí jak pro zasílání, tak pro příjem zpráv z důvodu snazší implementace.
 
 %Popište paralelní algoritmus, opět vyjděte ze zadání a přesně
 %vymezte odchylky, zvláště u algoritmu pro vyvažování zátěže, hledání
@@ -190,39 +179,49 @@ implementace zasobniku - dopsat
 
 \section{Naměřené výsledky a vyhodnocení}
 
-%\subsection{Sekvenční řešení}
-
 Pro sekvenční řešení jsme nalezli tři instance problému v zadaném časovém intervalu a 
-následně jsme tyto instance zpracovali pomocí paralelního řešení.
-
-sance na superlinearni zrychleni?
-grafy nemusi byt, staci tabulka
-
-
-posilani prace - pomaha, poznamky z testovani
-
-redukci lze pouzit pro ciselne vysledky
-
-stack odebiratelny i ze spoda - odebirani po jednom? zalezi jak je plny .. 
-
-
-zjistit, kdy se lame skalovatelnost - vetsi a mensi instance
-
+následně jsme tyto instance zpracovali pomocí paralelního řešení. 
 
 \begin{table}[ht]
   \begin{center}
-    \begin{tabular}{| c | c | c | c |}
-      \cline{2-4}
-                 \multicolumn{1}{c|}{} & $n$ & $k$ & doba běhu úlohy \\ \hline
-     \multirow{3}{*}{sekvenční řešení} & 350 & 168 & 11 minut, 41 sekund \\ 
-                                       & 320 & 160 & 12 minut, 23 sekund \\ 
-                                       & 155 & 101 & 10 minut, 26 sekund \\ \hline
-     \multirow{3}{*}{paralelní řešení} & 350 & 168 & 46.7416 sekund pro 12 cpu - jeste upravit\\
-                                       & 320 & 160 & \\
-                                       & 155 & 101 & \\
+    \begin{tabular}{| c | c | c |}
+      \hline
+      $n$ & $k$ & doba běhu úlohy \\ \hline
+      350 & 168 & 11 minut, 41 sekund \\ \hline
+      320 & 160 & 12 minut, 23 sekund \\ \hline
+      155 & 101 & 10 minut, 26 sekund \\
       \hline
     \end{tabular}
-    \caption{Tabulka naměřených hodnot pro sekvenční i paralelní řešení.}
+    \caption{Tabulka naměřených hodnot pro sekvenční řešení.}
+  \end{center}
+\end{table}
+
+\begin{table}[ht]
+  \begin{center}
+    \begin{tabular}{| c | c | c | c | c |}
+      \hline
+      $n$ & $k$ & doba běhu úlohy     & počet procesorů & zrychlení \\ \hline
+      350 & 168 & 5 minut, 43 sekund  & 2               & 2.04      \\ \hline
+      350 & 168 & 2 minuty, 52 sekund & 4               & 4.07      \\ \hline
+      350 & 168 & 1 minuta, 9 sekund  & 8               & 10.15     \\ \hline
+      350 & 168 & 35 sekund           & 16              & 20.02     \\ \hline
+      350 & 168 & 24 sekund           & 24              & 29.2      \\ \hline
+      350 & 168 & 20 sekund           & 32              & 35.05     \\ \hline
+      320 & 160 & 5 minut, 32 sekund  & 2               & 2.23      \\ \hline
+      320 & 160 & 2 minuty, 47 sekund & 4               & 4.44      \\ \hline
+      320 & 160 & 1 minuta, 8 sekund  & 8               & 10.92     \\ \hline
+      320 & 160 & 34 sekund           & 16              & 21.85     \\ \hline
+      320 & 160 & 23 sekund           & 24              & 32.3      \\ \hline
+      320 & 160 & 19 sekund           & 32              & 39.1      \\ \hline
+      155 & 101 & 7 minut, 40 sekund  & 2               & 1.36      \\ \hline
+      155 & 101 & 3 minuty, 56 sekund & 4               & 2.65      \\ \hline
+      155 & 101 & 1 minuta, 33 sekund & 8               & 6.73      \\ \hline
+      155 & 101 & 46 sekund           & 16              & 13.6      \\ \hline
+      155 & 101 & 39 sekund           & 24              & 16.05     \\ \hline
+      155 & 101 & 26 sekund           & 32              & 24.07     \\
+      \hline
+    \end{tabular}
+    \caption{Tabulka naměřených hodnot pro paralelní řešení.}
   \end{center}
 \end{table}
 
@@ -243,7 +242,30 @@ Další možný zdroj zrychlení je přerozdělování práce v průběhu hlavn�
 úvodní rovnoměrné rozdělení končit rychleji než ostatní, protože není třeba procházet všechny možné kombinace uzlů,
 ale jen ty, které stále splňují podmínku, že jejich uzly tvoří kliku grafu.
 
-TODO
+Z naměřených výsledků je patrné, že pro paralelní řešení dochází oproti sekvenčnímu
+řešení ke zhruba $n$ násobnému zrychlení, kde $n$ je počet procesorů. 
+V některých případech je zrychlení dokonce vyšší než lineární, avšak stále zhruba odpovídá lineárnímu zrychlení.
+Toto může být podle nás způsobeno konkrétními výhodnými nebo nevýhodnými daty. 
+Pro řešení tohoto problému a zvolené instance problému pravděpodobně neexistuje
+šance, že by paralelní řešení dosáhlo oproti sekvenčnímu superlineárního zrychlení.
+
+%\begin{table}[ht]
+%  \begin{center}
+%    \begin{tabular}{| c | c | c | c |}
+%      \cline{2-4}
+%                 \multicolumn{1}{c|}{} & $n$ & $k$ & doba běhu úlohy \\ \hline
+%     \multirow{3}{*}{sekvenční řešení} & 350 & 168 & 11 minut, 41 sekund \\ 
+%                                       & 320 & 160 & 12 minut, 23 sekund \\ 
+%                                       & 155 & 101 & 10 minut, 26 sekund \\ \hline
+%     \multirow{3}{*}{paralelní řešení} & 350 & 168 & 46.7416 sekund pro 12 cpu - jeste upravit\\
+%                                       & 320 & 160 & \\
+%                                       & 155 & 101 & \\
+%      \hline
+%    \end{tabular}
+%    \caption{Tabulka naměřených hodnot pro sekvenční i paralelní řešení.}
+%  \end{center}
+%\end{table}
+
 
 %\begin{enumerate}
 %\item Zvolte tři instance problému s takovou velikostí vstupních dat, pro které má
@@ -270,15 +292,14 @@ TODO
 
 \section{Závěr}
 
-%Během semestru jsme m
+Během semestru jsme měli možnost vyzkoušet si práci s knihovnou Open MPI
+při řešení problému hledání největší kliky v zadaném grafu.
+Semestrální práci hodnotíme jako zdařilou, avšak v reálném použití
+by pravděpodobně bylo nutné provést další meření pro různě velké instance problémů, 
+detailně analyzovat hlavní části programu a případně se pokusit tyto části optimalizovat.
+
+%\section{Literatura}
 %
-%Celkové zhodnocení semestrální práce a zkušenosti získaných během
-%semestru.
-
-TODO
-
-\section{Literatura}
-
-\appendix
+%\appendix
 
 \end{document}
